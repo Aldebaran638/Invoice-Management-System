@@ -28,7 +28,9 @@ export function Main({ items }: MainProps) {
   const { isMobile, setOpen, setOpenMobile, state } = useSidebar()
   const router = useRouterState()
   const currentPath = router.location.pathname
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
+    buildInitialOpenGroups(items, currentPath),
+  )
 
   useEffect(() => {
     setOpenGroups((currentGroups) => {
@@ -41,14 +43,14 @@ export function Main({ items }: MainProps) {
         }
 
         if (typeof nextGroups[item.title] === "undefined") {
-          nextGroups[item.title] = item.defaultExpanded ?? false
+          nextGroups[item.title] = hasActiveChild(item, currentPath)
           hasChanges = true
         }
       }
 
       return hasChanges ? nextGroups : currentGroups
     })
-  }, [items])
+  }, [items, currentPath])
 
   const handleMenuClick = () => {
     if (isMobile) {
@@ -78,11 +80,8 @@ export function Main({ items }: MainProps) {
         <SidebarMenu>
           {items.map((item) => {
             if (item.kind === "group") {
-              const isGroupActive = item.children.some((child) =>
-                isPathActive(child.path, currentPath),
-              )
-              const isOpen =
-                openGroups[item.title] ?? item.defaultExpanded ?? false
+              const groupHasActiveChild = hasActiveChild(item, currentPath)
+              const isOpen = openGroups[item.title] ?? groupHasActiveChild
 
               return (
                 <SidebarMenuItem
@@ -91,7 +90,10 @@ export function Main({ items }: MainProps) {
                 >
                   <SidebarMenuButton
                     tooltip={item.title}
-                    isActive={isGroupActive}
+                    className={cn(
+                      groupHasActiveChild &&
+                        "text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground",
+                    )}
                     onClick={() => handleGroupToggle(item)}
                   >
                     <item.icon />
@@ -219,4 +221,18 @@ function isPathActive(path: string, currentPath: string) {
   }
 
   return currentPath === path || currentPath.startsWith(`${path}/`)
+}
+
+function hasActiveChild(group: NavigationGroup, currentPath: string) {
+  return group.children.some((child) => isPathActive(child.path, currentPath))
+}
+
+function buildInitialOpenGroups(items: NavigationEntry[], currentPath: string) {
+  return items.reduce<Record<string, boolean>>((groups, item) => {
+    if (item.kind === "group") {
+      groups[item.title] = hasActiveChild(item, currentPath)
+    }
+
+    return groups
+  }, {})
 }

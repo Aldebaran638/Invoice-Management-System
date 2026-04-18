@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes import items, login, private, users, utils
+from app.modules.purchase_records.router import router as purchase_records_router
 from app.core.config import settings
 
 api_router = APIRouter()
@@ -8,6 +9,7 @@ api_router.include_router(login.router)
 api_router.include_router(users.router)
 api_router.include_router(utils.router)
 api_router.include_router(items.router)
+api_router.include_router(purchase_records_router)
 
 
 if settings.ENVIRONMENT == "local":
