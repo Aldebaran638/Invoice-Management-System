@@ -1,11 +1,22 @@
 import type { LucideIcon } from "lucide-react"
-import { Briefcase, FileText, Home, Settings, Trash2, Users } from "lucide-react"
+import {
+  Briefcase,
+  FileText,
+  FolderTree,
+  Home,
+  Settings,
+  Tags,
+  Trash2,
+  Users,
+} from "lucide-react"
 
 type ToolPath =
   | "/"
   | "/items"
   | "/admin"
   | "/settings"
+  | "/expense-category"
+  | "/expense-subcategory"
   | "/purchase-record-summary"
   | "/recycle-bin"
 
@@ -70,6 +81,20 @@ const navigationEntries: NavigationEntry[] = [
         icon: Users,
         title: "\u7528\u6237\u7ba1\u7406",
         path: "/admin",
+        requiresSuperuser: true,
+      },
+      {
+        kind: "tool",
+        icon: Tags,
+        title: "\u8d39\u7528\u5927\u7c7b\u7ba1\u7406",
+        path: "/expense-category",
+        requiresSuperuser: true,
+      },
+      {
+        kind: "tool",
+        icon: FolderTree,
+        title: "\u8d39\u7528\u5c0f\u7c7b\u7ba1\u7406",
+        path: "/expense-subcategory",
         requiresSuperuser: true,
       },
     ],

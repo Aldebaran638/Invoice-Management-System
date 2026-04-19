@@ -135,3 +135,9 @@ class NewPassword(SQLModel):
 from app.modules.purchase_records.purchase_record_summary.models import (  # noqa: E402,F401
     PurchaseRecord,
 )
+from app.modules.system_management.expense_category.models import (  # noqa: E402,F401
+    ExpenseCategory,
+)
+from app.modules.system_management.expense_subcategory.models import (  # noqa: E402,F401
+    ExpenseSubcategory,
+)

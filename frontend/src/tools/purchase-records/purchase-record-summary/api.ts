@@ -1,6 +1,8 @@
 import { ApiError, OpenAPI } from "@/client"
 import { request } from "@/client/core/request"
 import {
+  expenseCategoryOptionListSchema,
+  expenseSubcategoryOptionListSchema,
   purchaseRecordSummaryCreateSchema,
   purchaseRecordSummaryDeleteSchema,
   purchaseRecordSummaryDetailSchema,
@@ -8,6 +10,9 @@ import {
   purchaseRecordSummaryUpdateSchema,
 } from "./schemas"
 import type {
+  ExpenseCategoryOptionListResponse,
+  ExpenseSubcategoryOptionListResponse,
+  PurchaseRecordSummaryListQuery,
   PurchaseRecordSummaryCreateResponse,
   PurchaseRecordSummaryDeleteResponse,
   PurchaseRecordSummaryDetailResponse,
@@ -40,15 +45,28 @@ export function isForbiddenError(error: unknown) {
   return error instanceof ApiError && error.status === 403
 }
 
-export async function listPurchaseRecordSummary() {
+export async function listPurchaseRecordSummary(
+  query?: PurchaseRecordSummaryListQuery,
+) {
   const response = await request<PurchaseRecordSummaryListResponse>(OpenAPI, {
     method: "GET",
     // Keep the request URL identical to the backend route to avoid cross-origin redirects.
     url: "/api/v1/purchase-records/purchase-record-summary/",
+    query: {
+      ...(query?.major_category_id ? { major_category_id: query.major_category_id } : {}),
+      ...(query?.sub_category_id ? { sub_category_id: query.sub_category_id } : {}),
+    },
     errors: DEFAULT_ERRORS,
   })
 
-  return purchaseRecordSummaryListSchema.parse(response)
+  const parsed = purchaseRecordSummaryListSchema.parse(response)
+  return {
+    ...parsed,
+    data: {
+      list: parsed.data.list ?? parsed.data.records ?? [],
+      total: parsed.data.total ?? parsed.data.list?.length ?? parsed.data.records?.length ?? 0,
+    },
+  }
 }
 
 export async function getPurchaseRecordSummaryDetail(recordId: string) {
@@ -105,4 +123,33 @@ export async function deletePurchaseRecordSummary(recordId: string) {
   })
 
   return purchaseRecordSummaryDeleteSchema.parse(response)
+}
+
+export async function listExpenseCategoryOptions() {
+  const response = await request<ExpenseCategoryOptionListResponse>(OpenAPI, {
+    method: "GET",
+    url: "/api/v1/system-management/expense-category",
+    query: {
+      page: 1,
+      page_size: 200,
+    },
+    errors: DEFAULT_ERRORS,
+  })
+
+  return expenseCategoryOptionListSchema.parse(response)
+}
+
+export async function listExpenseSubcategoryOptions(majorCategoryId?: number) {
+  const response = await request<ExpenseSubcategoryOptionListResponse>(OpenAPI, {
+    method: "GET",
+    url: "/api/v1/system-management/expense-subcategory",
+    query: {
+      page: 1,
+      page_size: 200,
+      ...(majorCategoryId ? { major_category_id: majorCategoryId } : {}),
+    },
+    errors: DEFAULT_ERRORS,
+  })
+
+  return expenseSubcategoryOptionListSchema.parse(response)
 }

@@ -19,6 +19,8 @@ import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutRecycleBinRouteImport } from './routes/_layout/recycle-bin'
 import { Route as LayoutPurchaseRecordSummaryRouteImport } from './routes/_layout/purchase-record-summary'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutExpenseSubcategoryRouteImport } from './routes/_layout/expense-subcategory'
+import { Route as LayoutExpenseCategoryRouteImport } from './routes/_layout/expense-category'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -71,6 +73,17 @@ const LayoutItemsRoute = LayoutItemsRouteImport.update({
   path: '/items',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutExpenseSubcategoryRoute =
+  LayoutExpenseSubcategoryRouteImport.update({
+    id: '/expense-subcategory',
+    path: '/expense-subcategory',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutExpenseCategoryRoute = LayoutExpenseCategoryRouteImport.update({
+  id: '/expense-category',
+  path: '/expense-category',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -84,6 +97,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/expense-category': typeof LayoutExpenseCategoryRoute
+  '/expense-subcategory': typeof LayoutExpenseSubcategoryRoute
   '/items': typeof LayoutItemsRoute
   '/purchase-record-summary': typeof LayoutPurchaseRecordSummaryRoute
   '/recycle-bin': typeof LayoutRecycleBinRoute
@@ -95,6 +110,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/expense-category': typeof LayoutExpenseCategoryRoute
+  '/expense-subcategory': typeof LayoutExpenseSubcategoryRoute
   '/items': typeof LayoutItemsRoute
   '/purchase-record-summary': typeof LayoutPurchaseRecordSummaryRoute
   '/recycle-bin': typeof LayoutRecycleBinRoute
@@ -109,6 +126,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/expense-category': typeof LayoutExpenseCategoryRoute
+  '/_layout/expense-subcategory': typeof LayoutExpenseSubcategoryRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/purchase-record-summary': typeof LayoutPurchaseRecordSummaryRoute
   '/_layout/recycle-bin': typeof LayoutRecycleBinRoute
@@ -124,6 +143,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/expense-category'
+    | '/expense-subcategory'
     | '/items'
     | '/purchase-record-summary'
     | '/recycle-bin'
@@ -135,6 +156,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/expense-category'
+    | '/expense-subcategory'
     | '/items'
     | '/purchase-record-summary'
     | '/recycle-bin'
@@ -148,6 +171,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/expense-category'
+    | '/_layout/expense-subcategory'
     | '/_layout/items'
     | '/_layout/purchase-record-summary'
     | '/_layout/recycle-bin'
@@ -235,6 +260,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutItemsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/expense-subcategory': {
+      id: '/_layout/expense-subcategory'
+      path: '/expense-subcategory'
+      fullPath: '/expense-subcategory'
+      preLoaderRoute: typeof LayoutExpenseSubcategoryRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/expense-category': {
+      id: '/_layout/expense-category'
+      path: '/expense-category'
+      fullPath: '/expense-category'
+      preLoaderRoute: typeof LayoutExpenseCategoryRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -247,6 +286,8 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutExpenseCategoryRoute: typeof LayoutExpenseCategoryRoute
+  LayoutExpenseSubcategoryRoute: typeof LayoutExpenseSubcategoryRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutPurchaseRecordSummaryRoute: typeof LayoutPurchaseRecordSummaryRoute
   LayoutRecycleBinRoute: typeof LayoutRecycleBinRoute
@@ -256,6 +297,8 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutExpenseCategoryRoute: LayoutExpenseCategoryRoute,
+  LayoutExpenseSubcategoryRoute: LayoutExpenseSubcategoryRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutPurchaseRecordSummaryRoute: LayoutPurchaseRecordSummaryRoute,
   LayoutRecycleBinRoute: LayoutRecycleBinRoute,

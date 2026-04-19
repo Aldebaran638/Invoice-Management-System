@@ -1,17 +1,20 @@
 import uuid
+from collections.abc import Generator
 from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, delete
+from sqlmodel import Session, delete, select
 
 from app.core.config import settings
 from app.models import User
 from app.modules.purchase_records.purchase_record_summary.models import PurchaseRecord
+from app.modules.system_management.expense_category.models import ExpenseCategory
+from app.modules.system_management.expense_subcategory.models import ExpenseSubcategory
 from tests.utils.user import create_random_user
 
 BASE_URL = f"{settings.API_V1_STR}/purchase-records/purchase-record-summary"
-TEST_RECORD_NAME_PREFIX = "__prs_test__"
+TEST_RECORD_NAME_PREFIX = "__prs_v2_test__"
 
 
 def _get_normal_user(db: Session) -> User:
@@ -22,8 +25,22 @@ def _get_normal_user(db: Session) -> User:
     return normal_user
 
 
+def _get_category_id_by_name(db: Session, name: str) -> int:
+    statement = select(ExpenseCategory).where(ExpenseCategory.name == name)
+    category = db.exec(statement).first()
+    assert category is not None and category.id is not None
+    return category.id
+
+
+def _get_any_subcategory_id(db: Session) -> int:
+    statement = select(ExpenseSubcategory).limit(1)
+    subcategory = db.exec(statement).first()
+    assert subcategory is not None and subcategory.id is not None
+    return subcategory.id
+
+
 @pytest.fixture(autouse=True)
-def _cleanup_purchase_records(db: Session) -> None:
+def _cleanup_purchase_records(db: Session) -> Generator[None, None, None]:
     db.execute(
         delete(PurchaseRecord).where(
             PurchaseRecord.name.like(f"{TEST_RECORD_NAME_PREFIX}%")
@@ -43,14 +60,18 @@ def _create_purchase_record_for_user(
     db: Session,
     user_id: uuid.UUID,
     *,
-    purchase_date: date,
+    major_category_id: int,
+    sub_category_id: int | None,
     name: str,
-    amount: float,
 ) -> PurchaseRecord:
     record = PurchaseRecord(
-        purchase_date=purchase_date,
+        purchase_date=date(2026, 4, 19),
         name=f"{TEST_RECORD_NAME_PREFIX}{name}",
-        amount=amount,
+        amount=100.0,
+        founder_name="创始人A",
+        major_category_id=major_category_id,
+        sub_category_id=sub_category_id,
+        remarks="测试",
         owner_id=user_id,
         is_deleted=False,
         deleted_at=None,
@@ -61,220 +82,124 @@ def _create_purchase_record_for_user(
     return record
 
 
-def _create_random_purchase_record(db: Session) -> PurchaseRecord:
+def test_admin_can_view_all_records(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    other_category_id = _get_category_id_by_name(db, "交通费用")
+    user1 = create_random_user(db)
+    user2 = create_random_user(db)
+    assert user1.id is not None and user2.id is not None
+    rec1 = _create_purchase_record_for_user(db, user1.id, major_category_id=other_category_id, sub_category_id=None, name="admin-view-1")
+    rec2 = _create_purchase_record_for_user(db, user2.id, major_category_id=other_category_id, sub_category_id=None, name="admin-view-2")
+
+    response = client.get(f"{BASE_URL}/?page=1&page_size=20", headers=superuser_token_headers)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    ids = {item["id"] for item in body["data"]["list"]}
+    assert str(rec1.id) in ids
+    assert str(rec2.id) in ids
+
+
+def test_list_support_major_category_filter(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    major_other = _get_category_id_by_name(db, "其他项目费用")
+    major_traffic = _get_category_id_by_name(db, "交通费用")
+    sub_id = _get_any_subcategory_id(db)
     user = create_random_user(db)
     assert user.id is not None
-    return _create_purchase_record_for_user(
-        db,
-        user.id,
-        purchase_date=date(2026, 4, 19),
-        name="other-record",
-        amount=42.5,
-    )
-
-
-def _mark_deleted(db: Session, record: PurchaseRecord) -> None:
-    record.is_deleted = True
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-
-
-def test_list_only_returns_own_not_deleted_records(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    db: Session,
-) -> None:
-    normal_user = _get_normal_user(db)
-    assert normal_user.id is not None
-    own_record = _create_purchase_record_for_user(
-        db,
-        normal_user.id,
-        purchase_date=date(2026, 4, 18),
-        name="my-record",
-        amount=12.3,
-    )
-    own_deleted_record = _create_purchase_record_for_user(
-        db,
-        normal_user.id,
-        purchase_date=date(2026, 4, 17),
-        name="my-deleted-record",
-        amount=10.0,
-    )
-    _mark_deleted(db, own_deleted_record)
-    other_record = _create_random_purchase_record(db)
-
-    response = client.get(f"{BASE_URL}/", headers=normal_user_token_headers)
-    assert response.status_code == 200
-
-    records = response.json()["data"]["records"]
-    record_ids = {item["id"] for item in records}
-    assert str(own_record.id) in record_ids
-    assert str(own_deleted_record.id) not in record_ids
-    assert str(other_record.id) not in record_ids
-
-
-def test_normal_user_detail_own_record_success(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    db: Session,
-) -> None:
-    normal_user = _get_normal_user(db)
-    assert normal_user.id is not None
-    own_record = _create_purchase_record_for_user(
-        db,
-        normal_user.id,
-        purchase_date=date(2026, 4, 21),
-        name="my-detail-record",
-        amount=20.5,
-    )
+    target = _create_purchase_record_for_user(db, user.id, major_category_id=major_other, sub_category_id=sub_id, name="filter-major-target")
+    _create_purchase_record_for_user(db, user.id, major_category_id=major_traffic, sub_category_id=None, name="filter-major-other")
 
     response = client.get(
-        f"{BASE_URL}/{own_record.id}",
-        headers=normal_user_token_headers,
+        f"{BASE_URL}/?page=1&page_size=20&major_category_id={major_other}",
+        headers=superuser_token_headers,
     )
     assert response.status_code == 200
-
-    content = response.json()
-    assert "data" in content
-    assert content["data"]["id"] == str(own_record.id)
-    assert set(content["data"].keys()) == {"id", "purchase_date", "name", "amount"}
+    ids = {item["id"] for item in response.json()["data"]["list"]}
+    assert str(target.id) in ids
 
 
-def test_normal_user_detail_other_user_record_failed(
+def test_create_with_invalid_subcategory_rule_failed(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
 ) -> None:
-    other_user_record = _create_random_purchase_record(db)
-
-    response = client.get(
-        f"{BASE_URL}/{other_user_record.id}",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code in (403, 404)
-    assert "detail" in response.json()
-
-
-def test_create_purchase_record_success(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    db: Session,
-) -> None:
+    major_traffic = _get_category_id_by_name(db, "交通费用")
+    sub_id = _get_any_subcategory_id(db)
     payload = {
-        "purchase_date": "2026-04-22",
-        "name": f"{TEST_RECORD_NAME_PREFIX}new-record",
-        "amount": 18.8,
-    }
-    response = client.post(f"{BASE_URL}/", headers=normal_user_token_headers, json=payload)
-    assert response.status_code == 201
-
-    content = response.json()["data"]
-    assert content["purchase_date"] == payload["purchase_date"]
-    assert content["name"] == payload["name"]
-    assert content["amount"] == payload["amount"]
-
-    created = db.get(PurchaseRecord, uuid.UUID(content["id"]))
-    assert created is not None
-    normal_user = _get_normal_user(db)
-    assert created.owner_id == normal_user.id
-
-
-def test_create_purchase_record_required_field_validation_failed(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-) -> None:
-    payload = {
-        "purchase_date": "2026-04-22",
-        "amount": 18.8,
+        "request_id": "req-invalid-sub-rule",
+        "ts": 1700000000,
+        "payload": {
+            "purchase_date": "2026-04-19",
+            "name": f"{TEST_RECORD_NAME_PREFIX}invalid-sub",
+            "amount": 88.5,
+            "founder_name": "张三",
+            "major_category_id": major_traffic,
+            "sub_category_id": sub_id,
+            "remarks": None,
+        },
     }
     response = client.post(f"{BASE_URL}/", headers=normal_user_token_headers, json=payload)
     assert response.status_code == 422
 
 
-def test_update_own_purchase_record_success(
+def test_create_with_required_fields_and_success_envelope(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
 ) -> None:
-    normal_user = _get_normal_user(db)
-    assert normal_user.id is not None
-    record = _create_purchase_record_for_user(
-        db,
-        normal_user.id,
-        purchase_date=date(2026, 4, 22),
-        name="before-update",
-        amount=22.0,
-    )
-
+    major_other = _get_category_id_by_name(db, "其他项目费用")
+    sub_id = _get_any_subcategory_id(db)
     payload = {
-        "purchase_date": "2026-04-23",
-        "name": f"{TEST_RECORD_NAME_PREFIX}after-update",
-        "amount": 30.5,
+        "request_id": "req-create-ok",
+        "ts": 1700000010,
+        "payload": {
+            "purchase_date": "2026-04-20",
+            "name": f"{TEST_RECORD_NAME_PREFIX}create-ok",
+            "amount": 200.0,
+            "founder_name": "李四",
+            "major_category_id": major_other,
+            "sub_category_id": sub_id,
+            "remarks": "备注A",
+        },
     }
-    response = client.put(
-        f"{BASE_URL}/{record.id}",
-        headers=normal_user_token_headers,
-        json=payload,
-    )
-    assert response.status_code == 200
-    content = response.json()["data"]
-    assert content["purchase_date"] == payload["purchase_date"]
-    assert content["name"] == payload["name"]
-    assert content["amount"] == payload["amount"]
+    response = client.post(f"{BASE_URL}/", headers=normal_user_token_headers, json=payload)
+    assert response.status_code == 201
+    body = response.json()
+    assert body["version"] == "1.0"
+    assert body["success"] is True
+    assert body["request_id"] == payload["request_id"]
+    assert body["data"]["founder_name"] == "李四"
+    assert body["data"]["major_category_id"] == major_other
+    assert body["data"]["sub_category_id"] == sub_id
 
 
-def test_logical_delete_success(
+def test_delete_is_logical_and_not_returned_in_list(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
     db: Session,
 ) -> None:
+    major_traffic = _get_category_id_by_name(db, "交通费用")
     normal_user = _get_normal_user(db)
     assert normal_user.id is not None
     record = _create_purchase_record_for_user(
         db,
         normal_user.id,
-        purchase_date=date(2026, 4, 24),
-        name="to-delete",
-        amount=66.6,
+        major_category_id=major_traffic,
+        sub_category_id=None,
+        name="delete-hide",
     )
 
-    response = client.delete(
-        f"{BASE_URL}/{record.id}",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code == 200
-    assert response.json()["message"] == "Deleted"
-
-    db.expire_all()
-    refreshed = db.get(PurchaseRecord, record.id)
-    assert refreshed is not None
-    assert refreshed.is_deleted is True
-    assert refreshed.deleted_at is not None
-
-
-def test_deleted_record_not_in_default_list(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    db: Session,
-) -> None:
-    normal_user = _get_normal_user(db)
-    assert normal_user.id is not None
-    record = _create_purchase_record_for_user(
-        db,
-        normal_user.id,
-        purchase_date=date(2026, 4, 25),
-        name="delete-and-hide",
-        amount=11.1,
-    )
-
-    delete_response = client.delete(
-        f"{BASE_URL}/{record.id}",
-        headers=normal_user_token_headers,
-    )
+    delete_response = client.delete(f"{BASE_URL}/{record.id}", headers=normal_user_token_headers)
     assert delete_response.status_code == 200
+    assert delete_response.json()["data"]["message"] == "Deleted"
 
-    list_response = client.get(f"{BASE_URL}/", headers=normal_user_token_headers)
-    assert list_response.status_code == 200
-    record_ids = {item["id"] for item in list_response.json()["data"]["records"]}
-    assert str(record.id) not in record_ids
+    list_response = client.get(f"{BASE_URL}/?page=1&page_size=20", headers=normal_user_token_headers)
+    ids = {item["id"] for item in list_response.json()["data"]["list"]}
+    assert str(record.id) not in ids

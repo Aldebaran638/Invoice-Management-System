@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
 import type { PurchaseRecordSummaryItem } from "../types"
+import { getPurchaseImageUrl, PurchaseImageThumbnail } from "./purchase-image-viewer"
 
 type BuildColumnsOptions = {
   onOpenDetail: (id: string) => void
@@ -44,6 +45,36 @@ export function buildColumns({
       accessorKey: "amount",
       header: "购买金额",
       cell: ({ row }) => formatAmount(row.original.amount),
+    },
+    {
+      id: "purchase_image",
+      header: "图片",
+      cell: ({ row }) => (
+        <PurchaseImageThumbnail
+          url={getPurchaseImageUrl(row.original)}
+          alt={`购买记录-${row.original.name}-缩略图`}
+        />
+      ),
+    },
+    {
+      accessorKey: "founder_name",
+      header: "创始人",
+      cell: ({ row }) => row.original.founder_name || "-",
+    },
+    {
+      accessorKey: "major_category_name",
+      header: "大类",
+      cell: ({ row }) => row.original.major_category_name || "-",
+    },
+    {
+      accessorKey: "sub_category_name",
+      header: "小类",
+      cell: ({ row }) => row.original.sub_category_name || "-",
+    },
+    {
+      accessorKey: "remarks",
+      header: "备注",
+      cell: ({ row }) => row.original.remarks || "-",
     },
     {
       id: "actions",
