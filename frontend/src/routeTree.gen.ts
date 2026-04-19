@@ -16,7 +16,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutPurchaseRecordsRouteImport } from './routes/_layout/purchase-records'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 
@@ -54,11 +53,6 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutPurchaseRecordsRoute = LayoutPurchaseRecordsRouteImport.update({
-  id: '/purchase-records',
-  path: '/purchase-records',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
@@ -78,7 +72,6 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
-  '/purchase-records': typeof LayoutPurchaseRecordsRoute
   '/settings': typeof LayoutSettingsRoute
 }
 export interface FileRoutesByTo {
@@ -88,7 +81,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
-  '/purchase-records': typeof LayoutPurchaseRecordsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
 }
@@ -101,7 +93,6 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
-  '/_layout/purchase-records': typeof LayoutPurchaseRecordsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
@@ -115,7 +106,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
-    | '/purchase-records'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -125,7 +115,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
-    | '/purchase-records'
     | '/settings'
     | '/'
   id:
@@ -137,7 +126,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/items'
-    | '/_layout/purchase-records'
     | '/_layout/settings'
     | '/_layout/'
   fileRoutesById: FileRoutesById
@@ -201,13 +189,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/purchase-records': {
-      id: '/_layout/purchase-records'
-      path: '/purchase-records'
-      fullPath: '/purchase-records'
-      preLoaderRoute: typeof LayoutPurchaseRecordsRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
@@ -228,7 +209,6 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
-  LayoutPurchaseRecordsRoute: typeof LayoutPurchaseRecordsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
@@ -236,7 +216,6 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
-  LayoutPurchaseRecordsRoute: LayoutPurchaseRecordsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
