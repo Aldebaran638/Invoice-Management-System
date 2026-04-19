@@ -57,7 +57,6 @@ flowchart TD
 
 `tables` 中每一项表示一张需要处理的表，包含以下字段：
 
-* `table_key`
 * `table_name`
 * `action`
 * `description`
@@ -119,7 +118,7 @@ flowchart TD
   "object_key": "transcript",
   "tables": [
     {
-      "table_key": "transcript",
+      // table_key严格等于object_key
       "table_name": "成绩单",
       "action": "create",
       "description": "用于存储学生成绩单信息",

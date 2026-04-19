@@ -31,27 +31,8 @@
 执行`skills\members\architect_skills\tool-intake.md` skill,得到skill输出的json内容.
 
 四. 第二步：检查数据库是否支撑当前工具
-执行`skills\members\architect_skills\tool-intake.md` skill,得到skill输出的json内容.
+执行`skills\members\architect_skills\db-design-intake.md` skill,得到skill输出的json内容.
 
-
-五. 第二步补充产物：最终表字段定义
-
-1. 数据库支撑结论明确后，架构师必须产出最终表字段定义。
-2. 最终表字段定义未完成前，禁止进入设计文档阶段。
-3. 每一张新表都必须单独列出最终字段定义。
-4. 最终表字段定义必须包含以下内容：
-   表名称
-   字段名称
-   字段类型
-   是否允许为空
-   默认值
-   主键
-   外键
-   索引
-   唯一约束
-   字段说明
-5. 存在业务规则约束的字段，必须在最终表字段定义中明确写出约束。
-6. 最终表字段定义必须与数据库支撑结论保持一致。
 
 六. 第三步：创建设计文档
 
