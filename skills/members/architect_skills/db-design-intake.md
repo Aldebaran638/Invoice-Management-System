@@ -35,7 +35,7 @@ flowchart TD
     K --> L[结束当前 skill]
 
     E -- 是 --> G
-````
+```
 
 **规则：**
 
