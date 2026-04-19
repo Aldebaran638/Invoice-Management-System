@@ -1,18 +1,26 @@
 import { ApiError, OpenAPI } from "@/client"
 import { request } from "@/client/core/request"
 import {
+  purchaseRecordSummaryCreateSchema,
+  purchaseRecordSummaryDeleteSchema,
   purchaseRecordSummaryDetailSchema,
   purchaseRecordSummaryListSchema,
+  purchaseRecordSummaryUpdateSchema,
 } from "./schemas"
 import type {
+  PurchaseRecordSummaryCreateResponse,
+  PurchaseRecordSummaryDeleteResponse,
   PurchaseRecordSummaryDetailResponse,
   PurchaseRecordSummaryListResponse,
+  PurchaseRecordSummaryUpdateResponse,
+  PurchaseRecordSummaryUpsertPayload,
 } from "./types"
 
 const DEFAULT_ERRORS = {
   401: "Unauthorized",
   403: "Forbidden",
   404: "Not Found",
+  422: "Validation Error",
 }
 
 export function getApiErrorMessage(error: unknown) {
@@ -54,4 +62,47 @@ export async function getPurchaseRecordSummaryDetail(recordId: string) {
   })
 
   return purchaseRecordSummaryDetailSchema.parse(response)
+}
+
+export async function createPurchaseRecordSummary(
+  payload: PurchaseRecordSummaryUpsertPayload,
+) {
+  const response = await request<PurchaseRecordSummaryCreateResponse>(OpenAPI, {
+    method: "POST",
+    url: "/api/v1/purchase-records/purchase-record-summary/",
+    body: payload,
+    errors: DEFAULT_ERRORS,
+  })
+
+  return purchaseRecordSummaryCreateSchema.parse(response)
+}
+
+export async function updatePurchaseRecordSummary(
+  recordId: string,
+  payload: PurchaseRecordSummaryUpsertPayload,
+) {
+  const response = await request<PurchaseRecordSummaryUpdateResponse>(OpenAPI, {
+    method: "PUT",
+    url: "/api/v1/purchase-records/purchase-record-summary/{record_id}",
+    path: {
+      record_id: recordId,
+    },
+    body: payload,
+    errors: DEFAULT_ERRORS,
+  })
+
+  return purchaseRecordSummaryUpdateSchema.parse(response)
+}
+
+export async function deletePurchaseRecordSummary(recordId: string) {
+  const response = await request<PurchaseRecordSummaryDeleteResponse>(OpenAPI, {
+    method: "DELETE",
+    url: "/api/v1/purchase-records/purchase-record-summary/{record_id}",
+    path: {
+      record_id: recordId,
+    },
+    errors: DEFAULT_ERRORS,
+  })
+
+  return purchaseRecordSummaryDeleteSchema.parse(response)
 }

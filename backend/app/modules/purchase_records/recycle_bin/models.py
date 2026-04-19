@@ -1,0 +1,1 @@
+from app.modules.purchase_records.purchase_record_summary.models import PurchaseRecord

@@ -1,13 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import type { PurchaseRecordSummaryItem } from "../types"
+import type { RecycleBinRecord } from "../types"
 
 type BuildColumnsOptions = {
   onOpenDetail: (id: string) => void
-  onOpenEdit: (id: string) => void
-  onOpenDelete: (id: string) => void
-  deletingRecordId?: string | null
+  onRestore: (id: string) => void
+  restoringRecordId?: string | null
 }
 
 function formatAmount(amount: number | string | null) {
@@ -16,7 +15,7 @@ function formatAmount(amount: number | string | null) {
   }
 
   const value = typeof amount === "string" ? Number(amount) : amount
-  return Number.isFinite(value) ? value.toFixed(2) : "0.00"
+  return Number.isFinite(value) ? value.toFixed(2) : "-"
 }
 
 function formatDate(value: string) {
@@ -25,10 +24,9 @@ function formatDate(value: string) {
 
 export function buildColumns({
   onOpenDetail,
-  onOpenEdit,
-  onOpenDelete,
-  deletingRecordId,
-}: BuildColumnsOptions): ColumnDef<PurchaseRecordSummaryItem>[] {
+  onRestore,
+  restoringRecordId,
+}: BuildColumnsOptions): ColumnDef<RecycleBinRecord>[] {
   return [
     {
       accessorKey: "purchase_date",
@@ -46,6 +44,11 @@ export function buildColumns({
       cell: ({ row }) => formatAmount(row.original.amount),
     },
     {
+      accessorKey: "deleted_at",
+      header: "删除日期",
+      cell: ({ row }) => formatDate(row.original.deleted_at),
+    },
+    {
       id: "actions",
       header: () => <span className="sr-only">操作</span>,
       cell: ({ row }) => (
@@ -53,16 +56,12 @@ export function buildColumns({
           <Button size="sm" variant="outline" onClick={() => onOpenDetail(row.original.id)}>
             查看详情
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onOpenEdit(row.original.id)}>
-            编辑
-          </Button>
           <Button
             size="sm"
-            variant="destructive"
-            onClick={() => onOpenDelete(row.original.id)}
-            disabled={deletingRecordId === row.original.id}
+            onClick={() => onRestore(row.original.id)}
+            disabled={restoringRecordId === row.original.id}
           >
-            删除
+            恢复
           </Button>
         </div>
       ),

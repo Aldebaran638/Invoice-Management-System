@@ -21,3 +21,19 @@ class PurchaseRecordSummaryListResponse(SQLModel):
 
 class PurchaseRecordSummaryDetailResponse(SQLModel):
     data: PurchaseRecordSummaryRecord
+
+
+class PurchaseRecordSummaryCreate(SQLModel):
+    purchase_date: date
+    name: str
+    amount: float | None = None
+
+
+class PurchaseRecordSummaryUpdate(SQLModel):
+    purchase_date: date
+    name: str
+    amount: float | None = None
+
+
+class PurchaseRecordSummaryDeleteResponse(SQLModel):
+    message: str

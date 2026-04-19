@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import { Briefcase, FileText, Home, Settings, Users } from "lucide-react"
+import { Briefcase, FileText, Home, Settings, Trash2, Users } from "lucide-react"
 
 type ToolPath =
   | "/"
@@ -7,6 +7,7 @@ type ToolPath =
   | "/admin"
   | "/settings"
   | "/purchase-record-summary"
+  | "/recycle-bin"
 
 type NavigationVisibilityContext = {
   isSuperuser: boolean
@@ -84,6 +85,12 @@ const navigationEntries: NavigationEntry[] = [
         icon: FileText,
         title: "\u8d2d\u4e70\u8bb0\u5f55\u6c47\u603b",
         path: "/purchase-record-summary",
+      },
+      {
+        kind: "tool",
+        icon: Trash2,
+        title: "\u56de\u6536\u7ad9",
+        path: "/recycle-bin",
       },
     ],
   },
