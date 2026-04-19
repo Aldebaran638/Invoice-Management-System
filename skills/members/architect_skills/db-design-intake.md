@@ -1,6 +1,7 @@
+````md
 ---
 name: db-design-intake
-description: 将第一阶段产出的业务对象定义，转成结构化数据库设计定义。当用户已经明确一个新业务对象，并需要通过对话逐步确认数据库层该如何落地时使用。输出字段包括 object_key、tables。该 skill 负责与用户确认是否需要新建表、字段如何定义、字段类型、是否非空、是否唯一、是否主键、是否外键，以及外键关联到哪张表的哪个字段。
+description: 将第一阶段产出的业务对象定义，转成结构化数据库设计定义。当用户已经明确一个新业务对象，并需要通过对话逐步确认数据库层该如何落地时使用。输出字段包括 object_key、tables。该 skill 负责与用户确认是否需要新建表、字段如何定义、字段类型、是否非空、是否唯一、是否主键、是否外键、是否建立索引、默认值是什么，以及外键关联到哪张表的哪个字段。
 ---
 
 - 执行本 skill 时，只能基于当前输入的业务对象定义、用户当前补充的提示词、以及当前可读取到的数据库相关内容进行判断，不引用历史上下文、外部实现信息或未在当前输入中出现的假设。
@@ -53,11 +54,7 @@ flowchart TD
 
 **字段规则：**
 
-### 1. `db_action`
-
-表示数据库落地策略。
-
-### 2. `tables`
+### 1. `tables`
 
 `tables` 中每一项表示一张需要处理的表，包含以下字段：
 
@@ -75,7 +72,7 @@ flowchart TD
   * `extend`
   * `create`
 
-### 3. `fields`
+### 2. `fields`
 
 `fields` 中每一项表示一个字段，包含以下字段：
 
@@ -85,6 +82,8 @@ flowchart TD
 * `nullable`
 * `primary_key`
 * `unique`
+* `index`
+* `default`
 * `foreign_key`
 
 其中：
@@ -102,6 +101,8 @@ flowchart TD
 * `nullable` 只能是 `true` 或 `false`
 * `primary_key` 只能是 `true` 或 `false`
 * `unique` 只能是 `true` 或 `false`
+* `index` 只能是 `true` 或 `false`
+* `default` 表示字段默认值；没有默认值时必须为 `null`
 * `foreign_key` 没有外键时必须为 `null`
 * `foreign_key` 有值时格式必须为：
 
@@ -131,6 +132,8 @@ flowchart TD
           "nullable": false,
           "primary_key": true,
           "unique": true,
+          "index": true,
+          "default": null,
           "foreign_key": null
         },
         {
@@ -140,6 +143,8 @@ flowchart TD
           "nullable": false,
           "primary_key": false,
           "unique": false,
+          "index": true,
+          "default": null,
           "foreign_key": {
             "table": "student",
             "field": "id"
@@ -152,10 +157,15 @@ flowchart TD
           "nullable": false,
           "primary_key": false,
           "unique": false,
+          "index": false,
+          "default": null,
           "foreign_key": null
         }
       ]
     }
   ]
 }
+```
+
+```
 ```
