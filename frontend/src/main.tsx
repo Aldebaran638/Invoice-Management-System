@@ -13,14 +13,28 @@ import { Toaster } from "./components/ui/sonner"
 import "./index.css"
 import { routeTree } from "./routeTree.gen"
 
+const SESSION_EXPIRED_NOTICE_KEY = "session_expired_notice"
+
 OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
   return localStorage.getItem("access_token") || ""
 }
 
+// Centralize auth-expiration handling so every API consumer gets the same
+// logout + redirect behavior without duplicating checks in pages or hooks.
 const handleApiError = (error: Error) => {
-  if (error instanceof ApiError && [401, 403].includes(error.status)) {
+  if (!(error instanceof ApiError)) {
+    return
+  }
+
+  const isExpiredSession =
+    [401, 403].includes(error.status) ||
+    (error.status === 404 &&
+      (error.body as { detail?: string } | undefined)?.detail === "User not found")
+
+  if (isExpiredSession) {
     localStorage.removeItem("access_token")
+    sessionStorage.setItem(SESSION_EXPIRED_NOTICE_KEY, "1")
     window.location.href = "/login"
   }
 }

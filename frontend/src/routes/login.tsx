@@ -4,11 +4,14 @@ import {
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
+import { AlertCircle } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import type { Body_login_login_access_token as AccessToken } from "@/client"
 import { AuthLayout } from "@/components/Common/AuthLayout"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   Form,
   FormControl,
@@ -31,6 +34,7 @@ const formSchema = z.object({
 }) satisfies z.ZodType<AccessToken>
 
 type FormData = z.infer<typeof formSchema>
+const SESSION_EXPIRED_NOTICE_KEY = "session_expired_notice"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -52,6 +56,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { loginMutation } = useAuth()
+  const [showSessionExpiredNotice, setShowSessionExpiredNotice] = useState(false)
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
@@ -61,6 +66,18 @@ function Login() {
       password: "",
     },
   })
+
+  // Consume the redirect flag once so the user sees a clear re-login notice
+  // after the global request layer invalidates an expired session.
+  useEffect(() => {
+    const shouldShowNotice =
+      sessionStorage.getItem(SESSION_EXPIRED_NOTICE_KEY) === "1"
+
+    if (shouldShowNotice) {
+      setShowSessionExpiredNotice(true)
+      sessionStorage.removeItem(SESSION_EXPIRED_NOTICE_KEY)
+    }
+  }, [])
 
   const onSubmit = (data: FormData) => {
     if (loginMutation.isPending) return
@@ -77,6 +94,16 @@ function Login() {
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-2xl font-bold">Login to your account</h1>
           </div>
+
+          {showSessionExpiredNotice ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>登录已过期</AlertTitle>
+              <AlertDescription>
+                当前登录已经过期，请重新登录
+              </AlertDescription>
+            </Alert>
+          ) : null}
 
           <div className="grid gap-4">
             <FormField

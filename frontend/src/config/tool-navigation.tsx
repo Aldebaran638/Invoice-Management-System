@@ -1,7 +1,12 @@
 import type { LucideIcon } from "lucide-react"
-import { Briefcase, Home, Settings, Users } from "lucide-react"
+import { Briefcase, FileText, Home, Settings, Users } from "lucide-react"
 
-type ToolPath = "/" | "/items" | "/admin" | "/settings"
+type ToolPath =
+  | "/"
+  | "/items"
+  | "/admin"
+  | "/settings"
+  | "/purchase-record-summary"
 
 type NavigationVisibilityContext = {
   isSuperuser: boolean
@@ -65,6 +70,20 @@ const navigationEntries: NavigationEntry[] = [
         title: "\u7528\u6237\u7ba1\u7406",
         path: "/admin",
         requiresSuperuser: true,
+      },
+    ],
+  },
+  {
+    kind: "group",
+    icon: FileText,
+    title: "\u8d2d\u4e70\u8bb0\u5f55",
+    defaultExpanded: true,
+    children: [
+      {
+        kind: "tool",
+        icon: FileText,
+        title: "\u8d2d\u4e70\u8bb0\u5f55\u6c47\u603b",
+        path: "/purchase-record-summary",
       },
     ],
   },

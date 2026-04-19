@@ -138,12 +138,12 @@
 
 1. 前端AI必须负责生成本工具对应的前端测试文件。
 2. 前端AI生成的前端测试文件必须与工具目录一一对应。
-3. 前端AI生成的前端测试目录必须为 `frontend/tests/<tool-key>/`。
-4. 前端AI生成的主测试文件必须为 `frontend/tests/<tool-key>/index.spec.ts`。
-5. 前端AI允许在 `frontend/tests/<tool-key>/` 下生成辅助测试文件。
+3. 前端AI生成的前端测试目录必须为 `frontend/tests/<group>/<tool-key>/`。
+4. 前端AI生成的主测试文件必须为 `frontend/tests/<group>/<tool-key>/index.spec.ts`。
+5. 前端AI允许在 `frontend/tests/<group>/<tool-key>/` 下生成辅助测试文件。
 6. 架构师向前端AI发派任务时，必须明确写出前端AI负责生成本工具对应的前端测试文件。
 7. 测试AI必须执行前端AI生成的前端测试文件。
-8. 测试AI执行前端测试时，必须执行 `frontend/tests/<tool-key>/index.spec.ts`。
+8. 测试AI执行前端测试时，必须执行 `frontend/tests/<group>/<tool-key>/index.spec.ts`。
 9. 测试AI禁止跳过前端AI已生成的主测试文件。
 10. 测试AI执行前端测试失败后，必须输出失败测试名称、失败原因、最后一段可用日志。
 
@@ -151,12 +151,12 @@
 
 1. 后端AI必须负责生成本工具对应的后端测试文件。
 2. 后端AI生成的后端测试文件必须与后端模块目录一一对应。
-3. 后端AI生成的后端测试目录必须为 `backend/tests/<tool-key>/`。
-4. 后端AI生成的主测试文件必须为 `backend/tests/<tool-key>/index_test.py`。
-5. 后端AI允许在 `backend/tests/<tool-key>/` 下生成辅助测试文件。
+3. 后端AI生成的后端测试目录必须为 `backend/tests/<group>/<tool-key>/`。
+4. 后端AI生成的主测试文件必须为 `backend/tests/<group>/<tool-key>/index_test.py`。
+5. 后端AI允许在 `backend/tests/<group>/<tool-key>/` 下生成辅助测试文件。
 6. 架构师向后端AI发派任务时，必须明确写出后端AI负责生成本工具对应的后端测试文件。
 7. 测试AI必须执行后端AI生成的后端测试文件。
-8. 测试AI执行后端测试时，必须执行 `backend/tests/<tool-key>/index_test.py`。
+8. 测试AI执行后端测试时，必须执行 `backend/tests/<group>/<tool-key>/index_test.py`。
 9. 测试AI禁止跳过后端AI已生成的主测试文件。
 10. 测试AI执行后端测试失败后，必须输出失败测试名称、失败原因、最后一段可用日志。
 

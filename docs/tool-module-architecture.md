@@ -22,13 +22,13 @@
 - 一个工具对应 `frontend/src/routes/_layout` 下的一个路由。
 - 工具导航统一在 `frontend/src/config/tool-navigation.tsx` 中注册。
 - 通用视觉基础组件继续放在 `frontend/src/components/ui`。
-- 工具自己的前端代码应放在 `frontend/src/tools/<tool-key>/`。
+- 工具自己的前端代码应放在 `frontend/src/tools/<group>/<tool-key>/`。
 
 ## 4. 后端映射规则
 
 - 一个工具对应一个后端模块。
 - 后端模块负责该工具的 schema、service、数据访问、router 和测试。
-- 新工具的后端模块应创建在 `backend/app/modules/<tool-key>/`。
+- 新工具的后端模块应创建在 `backend/app/modules/<group>/<tool-key>/`。
 - 认证、配置、数据库会话等共享能力继续放在公共基础目录中。
 
 ## 5. 新增一个工具时的固定交付流程
@@ -74,11 +74,14 @@
    - 权限校验
    - 参数校验错误
    - 共享行为的回归测试
-6. 重新生成或验证 OpenAPI 输出兼容性。
-7. 输出 backend report，内容包括：
+   - 设计文档中已定义且代码中已实现的其他关键业务分支
+6. 执行本次工具对应的后端测试。
+7. 重新生成或验证 OpenAPI 输出兼容性。
+8. 输出 backend report，内容包括：
    - 修改了哪些文件
    - 暴露了哪些接口
    - 数据库是否变更
+   - 执行了哪些校验命令以及结果
    - 风险点和边界情况
 
 后端 AI 的边界规则：
@@ -104,10 +107,13 @@
    - 路由可访问
    - 核心成功流程
    - 空状态或错误状态
-7. 输出 frontend report，内容包括：
+   - 设计文档中已定义且页面中已实现的其他关键交互
+7. 执行前端构建校验与本次工具对应的 Playwright 测试。
+8. 输出 frontend report，内容包括：
    - 修改了哪些文件
    - 新增了哪个路由
    - 使用了哪些 API
+   - 执行了哪些校验命令以及结果
    - 风格安全说明
 
 前端 AI 的边界规则：
